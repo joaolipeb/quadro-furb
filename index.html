@@ -1,0 +1,549 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Quadro FURB 2027/1</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Barlow+Condensed:wght@500;600;700&display=swap">
+<style>
+/* Layout: grade horária de papel quadriculado; lista de turmas à esquerda, quadro semanal fixo à direita */
+:root{
+  --bg:#f5f7f9; --card:#ffffff; --ink:#18202b; --muted:#5d6878; --line:#d9dfe6; --line2:#eaeef2;
+  --civ:#2b6a8c; --civ-bg:#dcebf3; --emp:#a8691a; --emp-bg:#f6e6cf; --est:#74468a; --est-bg:#ecdff2;
+  --ok:#2f7a4b; --warn:#a86a00; --bad:#b3362f; --bad-bg:#f8e1df; --felix:#c9a227;
+  --f-body:"Atkinson Hyperlegible",system-ui,sans-serif; --f-cond:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12171e; --card:#1a212b; --ink:#e7ecf2; --muted:#9aa6b5; --line:#2d3743; --line2:#232c37;
+  --civ:#6cb3d9; --civ-bg:#1d3646; --emp:#e0a456; --emp-bg:#3d2d17; --est:#c194d6; --est-bg:#35253f;
+  --ok:#6cc58c; --warn:#e3a83a; --bad:#ef7b72; --bad-bg:#3e1f1d; --felix:#e3c457; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12171e; --card:#1a212b; --ink:#e7ecf2; --muted:#9aa6b5; --line:#2d3743; --line2:#232c37;
+  --civ:#6cb3d9; --civ-bg:#1d3646; --emp:#e0a456; --emp-bg:#3d2d17; --est:#c194d6; --est-bg:#35253f;
+  --ok:#6cc58c; --warn:#e3a83a; --bad:#ef7b72; --bad-bg:#3e1f1d; --felix:#e3c457; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45}
+.wrap{max-width:1360px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-cond);font-weight:700;letter-spacing:.01em;margin:0;text-wrap:balance}
+h1{font-size:2rem;line-height:1.05}
+h2{font-size:1.25rem;text-transform:uppercase;letter-spacing:.06em}
+.sub{color:var(--muted);margin:4px 0 0}
+.top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px 24px;margin-bottom:16px}
+.prazo{font-family:var(--f-cond);font-size:1.05rem;font-weight:600;border:1.5px solid var(--ink);padding:4px 10px}
+.civ{--c:var(--civ);--cb:var(--civ-bg)} .emp{--c:var(--emp);--cb:var(--emp-bg)} .est{--c:var(--est);--cb:var(--est-bg)}
+
+/* resumo */
+.resumo{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) minmax(0,1.3fr);gap:12px;margin-bottom:18px}
+.met{background:var(--card);border:1px solid var(--line);padding:12px 14px;min-width:0}
+.met .nm{font-family:var(--f-cond);font-weight:600;text-transform:uppercase;letter-spacing:.06em;font-size:.85rem;color:var(--c)}
+.met .val{font-family:var(--f-cond);font-size:1.9rem;font-weight:700;line-height:1;margin-top:4px;font-variant-numeric:tabular-nums}
+.met .val small{font-size:.95rem;color:var(--muted);font-weight:500}
+.bar{position:relative;height:10px;background:var(--line2);margin:10px 0 6px}
+.bar i{position:absolute;top:0;bottom:0;left:0;background:var(--c)}
+.bar b{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(135deg,var(--c) 0 3px,transparent 3px 6px);opacity:.55}
+.bar .min{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink)}
+.met .st{font-size:.85rem;color:var(--muted)}
+.met .st.ok{color:var(--ok)} .met .st.warn{color:var(--warn)}
+.tot{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;align-content:start}
+.tot .k{font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-family:var(--f-cond);font-weight:600}
+.tot .v{font-family:var(--f-cond);font-size:1.45rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.05}
+.tot .v.bad{color:var(--bad)}
+
+/* corpo */
+.corpo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:20px;align-items:start}
+.filtros{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 12px}
+.chip{font:inherit;font-size:.85rem;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:4px 10px;cursor:pointer;border-radius:999px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip:focus-visible,.seg button:focus-visible,.btn:focus-visible{outline:2px solid var(--civ);outline-offset:2px}
+.busca{font:inherit;font-size:.9rem;padding:5px 10px;border:1px solid var(--line);background:var(--card);color:var(--ink);flex:1 1 160px;min-width:0}
+.grupo{margin:18px 0 8px;display:flex;align-items:baseline;gap:10px}
+.grupo h2{color:var(--c)}
+.grupo span{color:var(--muted);font-size:.85rem}
+.lista{display:flex;flex-direction:column;gap:6px}
+.tu{background:var(--card);border:1px solid var(--line);padding:10px 12px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 12px;align-items:center;transition:opacity .15s,border-color .15s}
+.tu.hl{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+.tu.s-sim{border-color:var(--c);background:linear-gradient(var(--cb),var(--cb)) left/4px 100% no-repeat,var(--card)}
+.tu.s-nao{opacity:.45}
+.tu.s-nao .ds{text-decoration:line-through}
+.cod{font-family:var(--f-cond);font-weight:700;font-size:.85rem;color:var(--c);background:var(--cb);padding:2px 6px;white-space:nowrap;align-self:start;margin-top:2px}
+.info{min-width:0}
+.ds{font-weight:700;line-height:1.25}
+.mt{color:var(--muted);font-size:.86rem;margin-top:2px}
+.tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.tag{font-size:.75rem;padding:1px 7px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.tag.bad{border-color:var(--bad);color:var(--bad);background:var(--bad-bg)}
+.tag.warn{border-color:var(--warn);color:var(--warn)}
+.tag.felix{border-color:var(--felix);color:var(--ink)}
+.seg{display:inline-flex;border:1px solid var(--line);align-self:start}
+.seg button{font:inherit;font-size:.8rem;border:0;background:transparent;color:var(--muted);padding:5px 9px;cursor:pointer;border-left:1px solid var(--line)}
+.seg button:first-child{border-left:0}
+.seg button[aria-pressed="true"].b-sim{background:var(--ok);color:#fff}
+.seg button[aria-pressed="true"].b-talvez{background:var(--warn);color:#fff}
+.seg button[aria-pressed="true"].b-nao{background:var(--muted);color:var(--bg)}
+
+/* quadro */
+.lado{position:sticky;top:calc(env(safe-area-inset-top,0px) + 10px)}
+.qhead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.scroll{overflow-x:auto;background:var(--card);border:1px solid var(--line)}
+.grade{position:relative;min-width:560px;display:grid;grid-template-columns:46px repeat(5,minmax(0,1fr))}
+.dh{font-family:var(--f-cond);font-weight:700;text-transform:uppercase;letter-spacing:.06em;text-align:center;padding:6px 0;border-bottom:1px solid var(--line);font-size:.9rem}
+.col{position:relative;border-left:1px solid var(--line2)}
+.eixo{position:relative}
+.eixo span{position:absolute;right:6px;font-size:.7rem;color:var(--muted);font-variant-numeric:tabular-nums;transform:translateY(-50%);font-family:var(--f-cond)}
+.hl-line{position:absolute;left:0;right:0;height:1px;background:var(--line2)}
+.gap{position:absolute;left:0;right:0;background:repeating-linear-gradient(90deg,var(--line) 0 4px,transparent 4px 8px);height:1px}
+.banda{position:absolute;left:4px;font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:var(--f-cond)}
+.felixz{position:absolute;left:0;right:0;background:repeating-linear-gradient(45deg,color-mix(in srgb,var(--felix) 30%,transparent) 0 4px,transparent 4px 9px);pointer-events:none}
+.felixz em{position:absolute;bottom:4px;left:4px;font-size:.65rem;font-style:normal;font-family:var(--f-cond);color:var(--ink);opacity:.8}
+.bl{position:absolute;padding:3px 4px;font-size:.7rem;line-height:1.15;overflow:hidden;cursor:pointer;border:1.5px solid var(--c);background:var(--cb);color:var(--ink)}
+.bl b{font-family:var(--f-cond);color:var(--c);font-size:.78rem;display:block}
+.bl.talvez{background:repeating-linear-gradient(135deg,var(--cb) 0 5px,var(--card) 5px 10px);border-style:dashed}
+.bl.todas{opacity:.55;border-width:1px}
+.bl.prev{outline:2px solid var(--ink);opacity:1;z-index:3}
+.bl.conf{border-color:var(--bad);box-shadow:inset 0 0 0 1px var(--bad)}
+.legenda{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.78rem;color:var(--muted);margin-top:8px}
+.legenda i{display:inline-block;width:14px;height:10px;vertical-align:middle;margin-right:4px;border:1.5px solid var(--muted)}
+.lg-t{background:repeating-linear-gradient(135deg,var(--line) 0 3px,transparent 3px 6px);border-style:dashed!important}
+.lg-f{background:repeating-linear-gradient(45deg,color-mix(in srgb,var(--felix) 45%,transparent) 0 3px,transparent 3px 6px);border-color:var(--felix)!important}
+.lg-c{border-color:var(--bad)!important}
+.fora{margin-top:14px;display:grid;gap:8px}
+.fora h3{font-size:1rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.fora ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px;font-size:.85rem}
+.fora li{display:flex;gap:8px;align-items:baseline}
+.vazio{color:var(--muted);font-size:.85rem}
+
+/* resposta */
+.resp{margin-top:28px;background:var(--card);border:1px solid var(--line);padding:16px}
+.resp textarea{width:100%;min-height:260px;font:inherit;font-size:.9rem;padding:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);resize:vertical}
+.acoes{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.btn{font:inherit;font-weight:700;border:1.5px solid var(--ink);background:var(--ink);color:var(--bg);padding:7px 14px;cursor:pointer}
+.btn.sec{background:transparent;color:var(--ink)}
+.aviso{font-size:.85rem;color:var(--muted)}
+.notas{margin-top:22px;font-size:.85rem;color:var(--muted);max-width:75ch}
+.notas li{margin-bottom:4px}
+.salvo{font-size:.78rem;color:var(--muted)}
+@media (max-width:1020px){.corpo{grid-template-columns:minmax(0,1fr)}.lado{position:static;order:-1}.resumo{grid-template-columns:repeat(3,minmax(0,1fr))}.resumo .met.totbox{grid-column:1/-1}}
+@media (max-width:620px){.resumo{grid-template-columns:minmax(0,1fr)}h1{font-size:1.6rem}.tu{grid-template-columns:auto minmax(0,1fr)}.tu .seg{grid-column:1/-1;justify-self:start}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>Quadro de turmas · FURB 2027/1</h1>
+      <p class="sub">PSPS Direito Civil, Direito das Relações Empresariais e Estágio Orientado Cível. Marque cada turma como Quero, Talvez ou Não.</p>
+    </div>
+    <div class="prazo">Resposta à Clarice até 27/10, 14h</div>
+  </div>
+
+  <section class="resumo" id="resumo" aria-label="Resumo das horas"></section>
+
+  <div class="corpo">
+    <section aria-label="Turmas disponíveis">
+      <div class="filtros" id="filtros"></div>
+      <div id="listas"></div>
+    </section>
+
+    <aside class="lado" aria-label="Quadro semanal">
+      <div class="qhead">
+        <h2>Semana</h2>
+        <div class="filtros" style="margin:0" id="vista"></div>
+      </div>
+      <div class="scroll"><div class="grade" id="grade"></div></div>
+      <div class="legenda">
+        <span><i style="border-color:var(--civ);background:var(--civ-bg)"></i>Quero</span>
+        <span><i class="lg-t"></i>Talvez</span>
+        <span><i class="lg-c"></i>Conflito</span>
+        <span><i class="lg-f"></i>Felix (qua e sex, desde 17h)</span>
+      </div>
+      <div class="fora" id="fora"></div>
+    </aside>
+  </div>
+
+  <section class="resp" aria-label="Resposta à Clarice">
+    <h2>Resposta à Clarice</h2>
+    <p class="aviso">Texto montado a partir das suas marcações. Revise e envie você mesmo pelo Outlook (clarice@furb.br).</p>
+    <textarea id="texto" aria-label="Texto da resposta"></textarea>
+    <div class="acoes">
+      <button class="btn" id="copiar" type="button">Copiar texto</button>
+      <label class="aviso"><input type="checkbox" id="incTalvez" checked> Incluir as "talvez" como alternativas</label>
+      <span class="aviso" id="copiado" role="status"></span>
+    </div>
+  </section>
+
+  <ul class="notas">
+    <li>Salário estimado pela tabela do e-mail: R$ 507,25 por disciplina de 2h/a, ou seja, cerca de R$ 253,63 por h/a. Valor bruto.</li>
+    <li>O e-mail diz 2026 para o início do semestre (17/02, quarta) e para os concentrados. Pelo dia da semana, é 2027. Os concentrados acontecem antes do semestre e não ocupam a semana.</li>
+    <li>Duas turmas iguais (mesma disciplina) contam como um só preparo de aula.</li>
+    <li>O e-mail repete a numeração (xxiv a xxvi) no fim de Direito Civil. Aqui cada turma tem um código próprio.</li>
+    <li class="salvo" id="salvo">Suas marcações ficam salvas.</li>
+  </ul>
+</div>
+
+<script>
+const HOR = {"1/2":[450,550],"3/4":[570,670],"1/4":[450,670],"3/5":[570,720],"9/11":[930,1080],
+  "12/13":[1110,1210],"14/15":[1220,1320],"12/15":[1110,1320],"12/14":[1110,1270]};
+const DIAS = {seg:1,ter:2,qua:3,qui:4,sex:5};
+const DN = ["","Seg","Ter","Qua","Qui","Sex"];
+const DNL = ["","segunda","terça","quarta","quinta","sexta"];
+const CONC = {civ:"Direito Civil",emp:"Direito das Relações Empresariais",est:"Estágio Orientado · Cível"};
+const RATE = 507.25/2;
+const MIN_HA = 8;
+
+// [código, concurso, disciplina, fase/turma, curso, turno do e-mail, h/a, horários | {de,ate,per} | null]
+const RAW = [
+ ["C01","civ","Direito Civil – Parte Geral","2.ª fase A","Direito","Noturno",4,"qui 12/13; sex 14/15"],
+ ["C02","civ","Direito Civil – Parte Geral","2.ª fase B","Direito","Noturno",4,"seg 12/13; qua 12/13"],
+ ["C03","civ","Direito Civil – Contratos – Parte Geral","4.ª fase A","Direito","Noturno",2,"ter 14/15"],
+ ["C04","civ","Direito Civil – Responsabilidade Civil","4.ª fase A","Direito","Noturno",2,"ter 12/13"],
+ ["C05","civ","Direito Civil – Contratos em Espécie","5.ª fase A","Direito","Noturno",4,"qui 12/13; sex 14/15"],
+ ["C06","civ","Direito Civil – Contratos em Espécie","5.ª fase B","Direito","Noturno",4,"seg 12/13; sex 12/13"],
+ ["C07","civ","Direito Civil – Contratos em Espécie","5.ª fase C","Direito","Noturno",4,"seg 14/15; ter 14/15"],
+ ["C08","civ","Direito Civil – Contratos em Espécie","5.ª fase A","Direito","Matutino",4,"sex 1/4"],
+ ["C09","civ","Direito Civil – Contratos em Espécie","5.ª fase B","Direito","Matutino",4,"seg 1/2; qui 3/4"],
+ ["C10","civ","Direito de Relações de Consumo","3.ª fase A","Marketing","Noturno",2,"ter 14/15"],
+ ["C11","civ","Direito de Relações de Consumo","5.ª fase A","Direito","Noturno",2,"sex 12/13"],
+ ["C12","civ","Direito de Relações de Consumo","5.ª fase B","Direito","Noturno",2,"sex 14/15"],
+ ["C13","civ","Direito de Relações de Consumo","5.ª fase C","Direito","Noturno",2,"ter 12/13"],
+ ["C14","civ","Direito Civil – Relações de Família","6.ª fase A","Direito","Noturno",4,"ter 12/13; qua 12/13"],
+ ["C15","civ","Direito Civil – Relações de Família","6.ª fase B","Direito","Noturno",4,"seg 12/13; qui 12/13"],
+ ["C16","civ","Direito Civil – Direito das Coisas","7.ª fase A","Direito","Noturno",4,"seg 12/13; ter 14/15"],
+ ["C17","civ","Direito Civil – Direito das Coisas","7.ª fase B","Direito","Noturno",4,"sex 12/15"],
+ ["C18","civ","Direito Civil – Direito das Coisas","7.ª fase A","Direito","Matutino",4,"seg 3/4; ter 1/2"],
+ ["C19","civ","Direito Civil – Direito das Coisas","7.ª fase B","Direito","Matutino",4,"qui 1/2; sex 1/2"],
+ ["C20","civ","Bioética e Biodireito","8.ª fase A","Direito","Noturno",2,"sex 14/15"],
+ ["C21","civ","Direito Civil – Sucessões","8.ª fase A","Direito","Noturno",4,"qua 14/15; sex 12/13"],
+ ["C22","civ","Direito da Infância, Juventude e Idoso","9.ª fase A","Direito","Noturno",2,"ter 12/13"],
+ ["C23","civ","Direito da Infância, Juventude e Idoso","9.ª fase B","Direito","Noturno",2,"seg 12/13"],
+ ["C24","civ","Direito da Infância, Juventude e Idoso","9.ª fase A","Direito","Matutino",2,"ter 1/2"],
+ ["C25","civ","Direito da Infância, Juventude e Idoso","9.ª fase B","Direito","Matutino",2,"seg 3/4"],
+ ["C26","civ","Legislação em Informática","3.ª fase A","BCC","Matutino",2,"seg 3/4"],
+ ["C27","civ","Legislação em Informática","3.ª fase A","SIS","Noturno",2,null],
+ ["C28","civ","Legislação em Informática","3.ª fase A","BCC","Noturno",2,"qui 12/13"],
+ ["C29","civ","Legislação em Informática","3.ª fase B","BCC","Noturno",2,"qui 14/15"],
+ ["C30","civ","Legislação em Publicidade e Propaganda","5.ª fase A/B","COM","Noturno",2,"qua 14/15"],
+ ["C31","civ","Legislação em Publicidade e Propaganda","5.ª fase C/D","COM","Noturno",2,"ter 14/15"],
+ ["E01","emp","Direito das Relações Empresariais I","7.ª fase A","Direito","Noturno",4,"seg 14/15; qua 14/15"],
+ ["E02","emp","Direito das Relações Empresariais I","7.ª fase B","Direito","Noturno",4,"seg 12/13; qua 12/13"],
+ ["E03","emp","Direito das Relações Empresariais I","7.ª fase B","Direito","Matutino",4,"qua 3/4; sex 3/4"],
+ ["E04","emp","Direito Empresarial","8.ª fase A","Administração","Noturno",4,"seg 12/15"],
+ ["E05","emp","Direito Empresarial","3.ª fase A","TPG","Noturno",4,null],
+ ["P01","est","Intervenção I – Cível","8.ª fase","Direito","Matutino/Noturno",5,{de:"27/01",ate:"16/02",ini:27,fim:47,per:"12/15"}],
+ ["P02","est","Intervenção I – Cível","8.ª fase","Direito","Matutino/Noturno",5,"qui 3/5"],
+ ["P03","est","Intervenção I – Cível","8.ª fase","Direito","Matutino/Noturno",5,"qui 3/5"],
+ ["P04","est","Intervenção I – Cível","8.ª fase","Direito","Matutino/Noturno",5,"sex 3/5"],
+ ["P05","est","Intervenção II – Cível","9.ª fase","Direito","Matutino/Noturno",5,"seg 3/5"],
+ ["P06","est","Intervenção II – Consumidor","9.ª fase","Direito","Matutino/Noturno",5,"qua 9/11"],
+ ["P07","est","Intervenção II – Cível","9.ª fase","Direito","Matutino/Noturno",5,"seg 12/14"],
+ ["P08","est","Intervenção II – Cível","9.ª fase","Direito","Matutino/Noturno",5,"ter 12/14"],
+ ["P09","est","Intervenção II – Consumidor","9.ª fase","Direito","Matutino/Noturno",5,"ter 12/14"],
+ ["P10","est","Prática de Impugnação em Decisões Cíveis","9.ª fase","Direito","Matutino/Noturno",4,{de:"01/02",ate:"15/02",ini:32,fim:46,per:"12/15"}],
+ ["P11","est","Prática de Impugnação em Decisões Cíveis","9.ª fase","Direito","Matutino/Noturno",4,"seg 1/2"],
+ ["P12","est","Prática de Impugnação em Decisões Cíveis","9.ª fase","Direito","Matutino/Noturno",4,"qua 1/2"],
+ ["P13","est","Prática de Impugnação em Decisões Cíveis","9.ª fase","Direito","Matutino/Noturno",4,"ter 12/13"],
+ ["P14","est","Prática de Impugnação em Decisões Cíveis","9.ª fase","Direito","Matutino/Noturno",4,"qua 12/13"],
+ ["P15","est","Intervenção III – Cível","10.ª fase","Direito","Matutino/Noturno",5,{de:"27/01",ate:"16/02",ini:27,fim:47,per:"12/15"}],
+ ["P16","est","Intervenção II – JEC","10.ª fase","Direito","Matutino/Noturno",4,"ter 3/5"],
+];
+
+const hm = m => `${Math.floor(m/60)}h${m%60?String(m%60).padStart(2,"0"):""}`;
+const T = RAW.map(([id,conc,disc,fase,curso,turnoEmail,ha,h]) => {
+  const t = {id,conc,disc,fase,curso,turnoEmail,ha,enc:[],concentrado:null,indef:false};
+  if (h === null) t.indef = true;
+  else if (typeof h === "object") t.concentrado = h;
+  else t.enc = h.split(";").map(s => { const [d,p] = s.trim().split(" "); return {dia:DIAS[d],per:p,ini:HOR[p][0],fim:HOR[p][1]}; });
+  if (t.indef) t.turno = "A definir";
+  else if (t.concentrado) t.turno = "Concentrado";
+  else { const m = Math.min(...t.enc.map(e=>e.ini)); t.turno = m < 720 ? "Matutino" : m < 1080 ? "Vespertino" : "Noturno"; }
+  t.horTxt = t.indef ? "horário a definir"
+    : t.concentrado ? `concentrado de ${t.concentrado.de} a ${t.concentrado.ate}, ${hm(HOR[t.concentrado.per][0])} às ${hm(HOR[t.concentrado.per][1])}`
+    : t.enc.map(e => `${DN[e.dia].toLowerCase()} ${hm(e.ini)}–${hm(e.fim)}`).join(", ");
+  t.felix = t.enc.some(e => (e.dia===3||e.dia===5) && e.fim > 1020);
+  t.cedo = t.enc.some(e => e.ini < 540);
+  t.busca = `${id} ${disc} ${fase} ${curso} ${t.horTxt}`.toLowerCase();
+  return t;
+});
+const byId = Object.fromEntries(T.map(t=>[t.id,t]));
+
+function choca(a,b){
+  if (a===b) return false;
+  if (a.concentrado && b.concentrado){
+    const x=a.concentrado,y=b.concentrado;
+    return x.ini<=y.fim && y.ini<=x.fim && HOR[x.per][0]<HOR[y.per][1] && HOR[y.per][0]<HOR[x.per][1];
+  }
+  return a.enc.some(e => b.enc.some(f => e.dia===f.dia && e.ini<f.fim && f.ini<e.fim));
+}
+
+// ---------- estado ----------
+let st = {};            // id -> "sim" | "talvez" | "nao"
+let filtro = {conc:"todos", turno:"todos", status:"todos", esconder:false, q:""};
+let vista = "escolhidas";
+let felixOn = true;
+let preview = null;
+try { const s = JSON.parse(localStorage.getItem("furb27-st")||"null"); if (s) st = s; } catch(e){}
+try { const v = JSON.parse(localStorage.getItem("furb27-ui")||"null"); if (v){ filtro = Object.assign(filtro,v.filtro||{}); filtro.q=""; vista=v.vista||vista; felixOn = v.felixOn!==false; } } catch(e){}
+const saveUi = () => { try{ localStorage.setItem("furb27-ui", JSON.stringify({filtro,vista,felixOn})); }catch(e){} };
+
+let dbDoc = null, writing = false, dirty = false;
+async function persist(){
+  try{ localStorage.setItem("furb27-st", JSON.stringify(st)); }catch(e){}
+  if (!dbDoc) return;
+  if (writing){ dirty = true; return; }
+  writing = true;
+  try { await dbDoc.set({status:{...st}, atualizado:new Date().toISOString()}); setSalvo("Salvo na sua conta. Aparece igual no celular e no Mac."); }
+  catch(e){ setSalvo("Não consegui salvar na conta agora. Ficou salvo só neste aparelho."); }
+  writing = false;
+  if (dirty){ dirty = false; persist(); }
+}
+const setSalvo = t => { document.getElementById("salvo").textContent = t; };
+(async () => {
+  const db = await window.claude?.use?.("db");
+  if (!db) { setSalvo("Suas marcações ficam salvas neste aparelho."); return; }
+  dbDoc = db.doc("quadro/joao");
+  let primeiro = true;
+  dbDoc.onSnapshot(snap => {
+    if (writing || dirty || snap.metadata?.hasPendingWrites) return;
+    if (snap.exists){ st = {...(snap.data().status||{})}; render(); setSalvo("Salvo na sua conta. Aparece igual no celular e no Mac."); }
+    else if (primeiro && Object.keys(st).length){ persist(); }
+    primeiro = false;
+  }, () => setSalvo("Sem conexão com a conta. Salvando só neste aparelho."));
+})();
+
+// ---------- cálculo ----------
+function calc(){
+  const r = {};
+  for (const c of Object.keys(CONC)) r[c] = {sim:0,talvez:0};
+  const sim = T.filter(t=>st[t.id]==="sim"), talvez = T.filter(t=>st[t.id]==="talvez");
+  sim.forEach(t=>r[t.conc].sim+=t.ha); talvez.forEach(t=>r[t.conc].talvez+=t.ha);
+  const total = sim.reduce((a,t)=>a+t.ha,0), totalT = talvez.reduce((a,t)=>a+t.ha,0);
+  const conflitos = [];
+  for (let i=0;i<sim.length;i++) for (let j=i+1;j<sim.length;j++) if (choca(sim[i],sim[j])) conflitos.push([sim[i],sim[j]]);
+  const preparos = new Set(sim.map(t=>t.disc+"|"+t.curso)).size;
+  const dias = new Set(sim.flatMap(t=>t.enc.map(e=>e.dia))).size;
+  const felix = sim.filter(t=>t.felix);
+  return {r,sim,talvez,total,totalT,conflitos,preparos,dias,felix};
+}
+const brl = v => v.toLocaleString("pt-BR",{style:"currency",currency:"BRL",maximumFractionDigits:0});
+
+// ---------- render ----------
+const el = (tag, cls, html) => { const e=document.createElement(tag); if(cls) e.className=cls; if(html!=null) e.innerHTML=html; return e; };
+const esc = s => String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function renderResumo(c){
+  const box = document.getElementById("resumo"); box.innerHTML = "";
+  for (const k of Object.keys(CONC)){
+    const {sim,talvez} = c.r[k], max = Math.max(16, sim+talvez+2);
+    let stx, scls="";
+    if (sim===0) { stx = talvez ? `Só talvez por enquanto. Mínimo: ${MIN_HA} h/a.` : `Nada escolhido. Mínimo: ${MIN_HA} h/a.`; }
+    else if (sim < MIN_HA) { stx = `Faltam ${MIN_HA-sim} h/a para o mínimo.`; scls="warn"; }
+    else { stx = "Mínimo de 8 h/a atingido."; scls="ok"; }
+    const m = el("div",`met ${k}`,`
+      <div class="nm">${CONC[k]}</div>
+      <div class="val">${sim} <small>h/a${talvez?` · +${talvez} talvez`:""}</small></div>
+      <div class="bar" aria-hidden="true"><i style="width:${sim/max*100}%"></i><b style="left:${sim/max*100}%;width:${talvez/max*100}%"></b><span class="min" style="left:${MIN_HA/max*100}%"></span></div>
+      <div class="st ${scls}">${stx}</div>`);
+    box.append(m);
+  }
+  box.append(el("div","met totbox",`<div class="tot">
+    <div><div class="k">Total quero</div><div class="v">${c.total} h/a</div></div>
+    <div><div class="k">Com talvez</div><div class="v">${c.total+c.totalT} h/a</div></div>
+    <div><div class="k">Bruto/mês (quero)</div><div class="v">${brl(c.total*RATE)}</div></div>
+    <div><div class="k">Preparos distintos</div><div class="v">${c.preparos}</div></div>
+    <div><div class="k">Dias com aula</div><div class="v">${c.dias}</div></div>
+    <div><div class="k">Conflitos</div><div class="v ${c.conflitos.length?"bad":""}">${c.conflitos.length? c.conflitos.map(p=>p[0].id+"×"+p[1].id).join(", ") : "nenhum"}</div></div>
+  </div>`));
+}
+
+function renderFiltros(){
+  const box = document.getElementById("filtros"); box.innerHTML = "";
+  const grupo = (key, opts) => opts.forEach(([v,l]) => {
+    const b = el("button","chip",l); b.type="button"; b.setAttribute("aria-pressed", filtro[key]===v);
+    b.onclick = () => { filtro[key] = filtro[key]===v && v!=="todos" ? "todos" : v; saveUi(); render(); };
+    box.append(b);
+  });
+  grupo("conc",[["todos","Todos"],["civ","Civil"],["emp","Empresarial"],["est","Estágio"]]);
+  box.append(el("span","",""));
+  grupo("turno",[["Matutino","Manhã"],["Vespertino","Tarde"],["Noturno","Noite"],["Concentrado","Concentrado"]]);
+  grupo("status",[["aberto","Sem decisão"],["sim","Quero"],["talvez","Talvez"],["nao","Não"]]);
+  const e = el("button","chip","Esconder o que choca com Quero"); e.type="button"; e.setAttribute("aria-pressed",filtro.esconder);
+  e.onclick = () => { filtro.esconder=!filtro.esconder; saveUi(); render(); }; box.append(e);
+  const q = el("input","busca"); q.type="search"; q.id="busca"; q.placeholder="Buscar disciplina, curso, dia"; q.value=filtro.q;
+  q.oninput = () => { filtro.q=q.value; renderListas(calc()); }; box.append(q);
+}
+
+function passa(t, c){
+  if (filtro.conc!=="todos" && t.conc!==filtro.conc) return false;
+  if (filtro.turno!=="todos" && t.turno!==filtro.turno) return false;
+  const s = st[t.id];
+  if (filtro.status==="aberto" && s) return false;
+  if (["sim","talvez","nao"].includes(filtro.status) && s!==filtro.status) return false;
+  if (filtro.esconder && s!=="sim" && c.sim.some(x=>choca(x,t))) return false;
+  if (filtro.q && !filtro.q.toLowerCase().split(/\s+/).every(w=>t.busca.includes(w))) return false;
+  return true;
+}
+
+function renderListas(c){
+  const box = document.getElementById("listas"); box.innerHTML = "";
+  let algum = false;
+  for (const k of Object.keys(CONC)){
+    const itens = T.filter(t=>t.conc===k && passa(t,c));
+    if (!itens.length) continue; algum = true;
+    const g = el("div",`grupo ${k}`,`<h2>${CONC[k]}</h2><span>${itens.length} turma${itens.length>1?"s":""}</span>`);
+    const l = el("div","lista");
+    for (const t of itens){
+      const s = st[t.id];
+      const comQuem = T.filter(o => (st[o.id]==="sim"||st[o.id]==="talvez") && choca(t,o));
+      const tags = [];
+      tags.push(`<span class="tag">${t.ha} h/a</span>`);
+      tags.push(`<span class="tag">${t.turno}</span>`);
+      if (t.curso!=="Direito") tags.push(`<span class="tag">${esc(t.curso)}</span>`);
+      comQuem.forEach(o => tags.push(`<span class="tag ${st[o.id]==="sim"?"bad":"warn"}">choca com ${o.id}${st[o.id]==="talvez"?" (talvez)":""}</span>`));
+      if (t.felix) tags.push(`<span class="tag felix">noite do Felix</span>`);
+      const irmas = T.filter(o=>o!==t && o.disc===t.disc && o.curso===t.curso && st[o.id]==="sim");
+      if (irmas.length && s!=="sim") tags.push(`<span class="tag">mesmo preparo de ${irmas.map(o=>o.id).join(", ")}</span>`);
+      const card = el("div",`tu ${k} ${s?"s-"+s:""}`);
+      card.id = "tu-"+t.id;
+      card.innerHTML = `<span class="cod">${t.id}</span>
+        <div class="info"><div class="ds">${esc(t.disc)}</div>
+        <div class="mt">${esc(t.fase)} · ${esc(t.horTxt)}</div>
+        <div class="tags">${tags.join("")}</div></div>`;
+      const seg = el("div","seg"); seg.setAttribute("role","group"); seg.setAttribute("aria-label","Decisão para "+t.id);
+      [["sim","Quero"],["talvez","Talvez"],["nao","Não"]].forEach(([v,l])=>{
+        const b = el("button","b-"+v,l); b.type="button"; b.setAttribute("aria-pressed", s===v);
+        b.onclick = () => { if (st[t.id]===v) delete st[t.id]; else st[t.id]=v; persist(); render(); };
+        seg.append(b);
+      });
+      card.append(seg);
+      card.onmouseenter = () => { preview=t.id; renderGrade(calc()); };
+      card.onmouseleave = () => { preview=null; renderGrade(calc()); };
+      l.append(card);
+    }
+    box.append(g,l);
+  }
+  if (!algum) box.append(el("p","vazio","Nenhuma turma com esses filtros."));
+}
+
+// eixo vertical: três faixas comprimidas
+const BANDAS = [["Manhã",450,720],["Tarde",930,1080],["Noite",1110,1320]];
+const PX = 0.95, GAP = 16, HEAD = 0;
+function y(m){
+  let off = HEAD;
+  for (const [,a,b] of BANDAS){ if (m<=b) return off + Math.max(0,m-a)*PX; off += (b-a)*PX + GAP; }
+  return off;
+}
+const ALTURA = y(1320);
+const LINHAS = [450,550,570,670,720,930,1080,1110,1210,1220,1270,1320];
+
+function renderGrade(c){
+  const g = document.getElementById("grade"); g.innerHTML = "";
+  g.append(el("div","dh",""));
+  for (let d=1; d<=5; d++) g.append(el("div","dh",DN[d]));
+  const eixo = el("div","eixo"); eixo.style.height = ALTURA+"px";
+  [450,570,720,930,1080,1110,1220,1320].forEach(m => { const s=el("span","",hm(m)); s.style.top=y(m)+"px"; eixo.append(s); });
+  g.append(eixo);
+
+  const mostrar = T.filter(t => t.enc.length && (
+    st[t.id]==="sim" || st[t.id]==="talvez" || t.id===preview ||
+    (vista==="todas" && st[t.id]!=="nao" && passa(t,c))));
+  const confIds = new Set(c.conflitos.flat().map(t=>t.id));
+
+  for (let d=1; d<=5; d++){
+    const col = el("div","col"); col.style.height = ALTURA+"px";
+    LINHAS.forEach(m => { const ln=el("div","hl-line"); ln.style.top=y(m)+"px"; col.append(ln); });
+    if (felixOn && (d===3||d===5)){
+      [[1020,1080],[1110,1320]].forEach(([a,b],i) => {
+        const z = el("div","felixz", i===1?"<em>Felix</em>":""); z.style.top=y(Math.max(a,930))+"px"; z.style.height=(y(b)-y(Math.max(a,930)))+"px"; col.append(z);
+      });
+    }
+    // blocos do dia, com raias para sobreposição
+    const blocos = [];
+    mostrar.forEach(t => t.enc.filter(e=>e.dia===d).forEach(e => blocos.push({t,e})));
+    blocos.sort((a,b)=>a.e.ini-b.e.ini || a.t.id.localeCompare(b.t.id));
+    const grupos = []; let cur = null;
+    for (const b of blocos){
+      if (!cur || b.e.ini >= cur.fim){ cur = {fim:b.e.fim, itens:[]}; grupos.push(cur); }
+      cur.fim = Math.max(cur.fim,b.e.fim); cur.itens.push(b);
+    }
+    for (const gr of grupos){
+      const raias = [];
+      gr.itens.forEach(b => { let r = raias.findIndex(f=>f<=b.e.ini); if (r<0){ r=raias.length; raias.push(0);} raias[r]=b.e.fim; b.r=r; });
+      const n = raias.length;
+      gr.itens.forEach(b => {
+        const s = st[b.t.id];
+        const cls = ["bl", b.t.conc, s==="talvez"?"talvez":"", !s||s==="nao"?"todas":"", b.t.id===preview?"prev":"", s==="sim"&&confIds.has(b.t.id)?"conf":""].join(" ");
+        const curto = b.t.disc.replace("Direito Civil – ","").replace("Direito das Relações Empresariais","DRE").replace("Prática de Impugnação em Decisões Cíveis","Impugnação").replace("Direito da Infância, Juventude e Idoso","Infância e Juventude");
+        const bl = el("div",cls, n>2 ? `<b>${b.t.id}</b>` : `<b>${b.t.id}</b>${esc(curto)}<br>${esc(b.t.fase.replace(" fase",""))}${b.t.curso!=="Direito"?" "+esc(b.t.curso):""}`);
+        bl.style.top = (y(b.e.ini)+1)+"px"; bl.style.height = (y(b.e.fim)-y(b.e.ini)-2)+"px";
+        bl.style.left = `calc(${b.r/n*100}% + 2px)`; bl.style.width = `calc(${100/n}% - 4px)`;
+        bl.title = `${b.t.id} · ${b.t.disc} · ${b.t.fase} · ${b.t.horTxt}`;
+        bl.onclick = () => { const c=document.getElementById("tu-"+b.t.id); if(!c){ filtro={conc:"todos",turno:"todos",status:"todos",esconder:false,q:""}; render(); } const x=document.getElementById("tu-"+b.t.id); x?.scrollIntoView({behavior:"smooth",block:"center"}); x?.classList.add("hl"); setTimeout(()=>x?.classList.remove("hl"),1600); };
+        col.append(bl);
+      });
+    }
+    g.append(col);
+  }
+  // rótulos de faixa na primeira coluna de dia
+  const primeira = g.querySelectorAll(".col")[0];
+  BANDAS.forEach(([n,a]) => { const b=el("div","banda",n); b.style.top=(y(a)+2)+"px"; primeira.append(b); });
+
+  // fora da semana
+  const fora = document.getElementById("fora"); fora.innerHTML = "";
+  const conc = T.filter(t=>t.concentrado && (st[t.id]==="sim"||st[t.id]==="talvez"||vista==="todas"));
+  const indef = T.filter(t=>t.indef && (st[t.id]==="sim"||st[t.id]==="talvez"||vista==="todas"));
+  const lista = (tit, arr) => {
+    const d = el("div","",`<h3>${tit}</h3>`);
+    if (!arr.length){ d.append(el("p","vazio","Nenhuma marcada.")); return d; }
+    const ul = el("ul");
+    arr.forEach(t => { const s=st[t.id]; const cf = T.filter(o=>st[o.id]==="sim"&&choca(t,o)).map(o=>o.id);
+      ul.append(el("li","",`<span class="cod ${t.conc}" style="color:var(--c);background:var(--cb)">${t.id}</span><span>${esc(t.disc)} · ${t.ha} h/a · ${esc(t.horTxt)}${s?` · <strong>${s==="sim"?"Quero":s==="talvez"?"Talvez":"Não"}</strong>`:""}${cf.length?` · <span style="color:var(--bad)">choca com ${cf.join(", ")}</span>`:""}</span>`)); });
+    d.append(ul); return d;
+  };
+  fora.append(lista("Concentradas (antes do semestre, 18h30 às 22h)", conc), lista("Horário a definir", indef));
+}
+
+function renderVista(){
+  const box = document.getElementById("vista"); box.innerHTML = "";
+  [["escolhidas","Minhas escolhas"],["todas","Todas as opções"]].forEach(([v,l]) => {
+    const b = el("button","chip",l); b.type="button"; b.setAttribute("aria-pressed",vista===v);
+    b.onclick = () => { vista=v; saveUi(); render(); }; box.append(b);
+  });
+  const f = el("button","chip","Felix"); f.type="button"; f.setAttribute("aria-pressed",felixOn);
+  f.onclick = () => { felixOn=!felixOn; saveUi(); render(); }; box.append(f);
+}
+
+function linha(t){
+  const turno = t.turnoEmail;
+  return `- ${t.disc} – ${t.fase} – ${t.curso} – ${turno} – ${t.ha}h/a (${t.horTxt})`;
+}
+function renderTexto(c){
+  const inc = document.getElementById("incTalvez").checked;
+  const partes = ["Prezada Clarice,","","Obrigado pelo contato. Para o semestre 2027/1, o Departamento pode me indicar para as seguintes turmas:",""];
+  let algum = false;
+  for (const k of Object.keys(CONC)){
+    const sim = c.sim.filter(t=>t.conc===k);
+    if (!sim.length) continue; algum = true;
+    partes.push(`${CONC[k].replace(" · Cível"," de Prática Jurídica – Cível").toUpperCase()} (${c.r[k].sim}h/a)`);
+    sim.forEach(t=>partes.push(linha(t)));
+    partes.push("");
+  }
+  if (!algum) partes.push("[marque ao menos uma turma como Quero]","");
+  if (inc && c.talvez.length){
+    partes.push("Se for necessário completar a carga ou ajustar a distribuição, também posso assumir:");
+    c.talvez.forEach(t=>partes.push(linha(t)));
+    partes.push("");
+  }
+  partes.push("Fico à disposição.","","Atenciosamente,","João Felipe Buerger");
+  const ta = document.getElementById("texto");
+  if (document.activeElement !== ta) ta.value = partes.join("\n");
+}
+
+function render(){
+  const c = calc();
+  renderResumo(c); renderFiltros(); renderListas(c); renderVista(); renderGrade(c); renderTexto(c);
+}
+document.getElementById("incTalvez").onchange = () => renderTexto(calc());
+document.getElementById("copiar").onclick = () => {
+  const ta = document.getElementById("texto"), ok = document.getElementById("copiado");
+  navigator.clipboard.writeText(ta.value).then(()=>{ ok.textContent="Copiado."; })
+    .catch(()=>{ ta.focus(); ta.select(); ok.textContent="Selecionei o texto. Use Cmd+C."; });
+};
+render();
+</script>
+</html>
