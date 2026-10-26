@@ -119,6 +119,11 @@ h2{font-size:1.25rem;text-transform:uppercase;letter-spacing:.06em}
 .notas{margin-top:22px;font-size:.85rem;color:var(--muted);max-width:75ch}
 .notas li{margin-bottom:4px}
 .salvo{font-size:.78rem;color:var(--muted)}
+.quem{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;margin:-6px 0 16px;font-size:.88rem;color:var(--muted)}
+.quem label{display:flex;align-items:center;gap:6px}
+.quem input{font:inherit;font-size:.88rem;padding:4px 8px;border:1px solid var(--line);background:var(--card);color:var(--ink);width:12em;max-width:100%}
+.sync::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ok);margin-right:6px;vertical-align:middle}
+.sync.off::before{background:var(--bad)}
 @media (max-width:1020px){.corpo{grid-template-columns:minmax(0,1fr)}.lado{position:static;order:-1}.resumo{grid-template-columns:repeat(3,minmax(0,1fr))}.resumo .met.totbox{grid-column:1/-1}}
 @media (max-width:620px){.resumo{grid-template-columns:minmax(0,1fr)}h1{font-size:1.6rem}.tu{grid-template-columns:auto minmax(0,1fr)}.tu .seg{grid-column:1/-1;justify-self:start}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -131,6 +136,11 @@ h2{font-size:1.25rem;text-transform:uppercase;letter-spacing:.06em}
       <p class="sub">PSPS Direito Civil, Direito das Relações Empresariais e Estágio Orientado Cível. Marque cada turma como Quero, Talvez ou Não.</p>
     </div>
     <div class="prazo">Resposta à Clarice até 27/10, 14h</div>
+  </div>
+
+  <div class="quem">
+    <label for="nome">Seu nome <input id="nome" type="text" autocomplete="name" placeholder="opcional"></label>
+    <span class="sync off" id="sync" role="status">Carregando as marcações compartilhadas…</span>
   </div>
 
   <section class="resumo" id="resumo" aria-label="Resumo das horas"></section>
@@ -173,7 +183,7 @@ h2{font-size:1.25rem;text-transform:uppercase;letter-spacing:.06em}
     <li>O e-mail diz 2026 para o início do semestre (17/02, quarta) e para os concentrados. Pelo dia da semana, é 2027. Os concentrados acontecem antes do semestre e não ocupam a semana.</li>
     <li>Duas turmas iguais (mesma disciplina) contam como um só preparo de aula.</li>
     <li>O e-mail repete a numeração (xxiv a xxvi) no fim de Direito Civil. Aqui cada turma tem um código próprio.</li>
-    <li class="salvo" id="salvo">Suas marcações ficam salvas.</li>
+    <li>As marcações são compartilhadas: quem abre este link vê e muda as mesmas escolhas. A página confere as mudanças a cada 10 segundos.</li>
   </ul>
 </div>
 
@@ -281,30 +291,47 @@ try { const s = JSON.parse(localStorage.getItem("furb27-st")||"null"); if (s) st
 try { const v = JSON.parse(localStorage.getItem("furb27-ui")||"null"); if (v){ filtro = Object.assign(filtro,v.filtro||{}); filtro.q=""; vista=v.vista||vista; felixOn = v.felixOn!==false; } } catch(e){}
 const saveUi = () => { try{ localStorage.setItem("furb27-ui", JSON.stringify({filtro,vista,felixOn})); }catch(e){} };
 
-let dbDoc = null, writing = false, dirty = false;
-async function persist(){
-  try{ localStorage.setItem("furb27-st", JSON.stringify(st)); }catch(e){}
-  if (!dbDoc) return;
-  if (writing){ dirty = true; return; }
-  writing = true;
-  try { await dbDoc.set({status:{...st}, atualizado:new Date().toISOString()}); setSalvo("Salvo na sua conta. Aparece igual no celular e no Mac."); }
-  catch(e){ setSalvo("Não consegui salvar na conta agora. Ficou salvo só neste aparelho."); }
-  writing = false;
-  if (dirty){ dirty = false; persist(); }
+// Marcações compartilhadas: o Apps Script "Quadro FURB 2027-1" (conta joao@) guarda o estado de todos.
+const API = "https://script.google.com/macros/s/AKfycbzFYQUBR0plOzDJYzYm-nakeqAU6qQNqxTjDuu1g0SmDiX6OCwNlnrqunoYgDYqECJuLg/exec";
+let enviando = 0, versao = -1, ultimo = null;
+const campoNome = document.getElementById("nome");
+try { campoNome.value = localStorage.getItem("furb27-nome") || ""; } catch(e){}
+campoNome.oninput = () => { try{ localStorage.setItem("furb27-nome", campoNome.value.trim()); }catch(e){} };
+function persist(){ try{ localStorage.setItem("furb27-st", JSON.stringify(st)); }catch(e){} }
+function mostrarSync(erro){
+  const s = document.getElementById("sync");
+  s.className = erro ? "sync off" : "sync";
+  if (erro){ s.textContent = erro; return; }
+  if (!ultimo || !ultimo.atualizado){ s.textContent = "Compartilhado. Ninguém marcou nada ainda."; return; }
+  const d = new Date(ultimo.atualizado), hoje = new Date().toDateString() === d.toDateString();
+  const quando = (hoje ? "" : d.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"}) + " ") + d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+  s.textContent = `Compartilhado. Última mudança${ultimo.por ? " por " + ultimo.por : ""} às ${quando}.`;
 }
-const setSalvo = t => { document.getElementById("salvo").textContent = t; };
-(async () => {
-  const db = await window.claude?.use?.("db");
-  if (!db) { setSalvo("Suas marcações ficam salvas neste aparelho."); return; }
-  dbDoc = db.doc("quadro/joao");
-  let primeiro = true;
-  dbDoc.onSnapshot(snap => {
-    if (writing || dirty || snap.metadata?.hasPendingWrites) return;
-    if (snap.exists){ st = {...(snap.data().status||{})}; render(); setSalvo("Salvo na sua conta. Aparece igual no celular e no Mac."); }
-    else if (primeiro && Object.keys(st).length){ persist(); }
-    primeiro = false;
-  }, () => setSalvo("Sem conexão com a conta. Salvando só neste aparelho."));
-})();
+function aplicar(s){
+  if (enviando) return;
+  ultimo = s; versao = s.versao;
+  st = {...(s.status || {})}; persist(); render(); mostrarSync();
+}
+async function buscar(){
+  if (enviando || document.hidden) return;
+  try {
+    const r = await fetch(API + "?api=1", {cache:"no-store"});
+    const s = await r.json();
+    if (s.versao !== versao) aplicar(s); else mostrarSync();
+  } catch(e){ mostrarSync("Sem conexão com as marcações compartilhadas. Tentando de novo em instantes."); }
+}
+async function enviar(id, v){
+  enviando++;
+  let s = null;
+  try { const r = await fetch(API, {method:"POST", body: JSON.stringify({id, v, nome: campoNome.value.trim()})}); s = await r.json(); }
+  catch(e){}
+  finally { enviando--; }
+  if (s && !s.erro) aplicar(s);
+  else { mostrarSync("Não consegui gravar a última mudança. Toque de novo."); buscar(); }
+}
+setInterval(buscar, 10000);
+document.addEventListener("visibilitychange", buscar);
+buscar();
 
 // ---------- cálculo ----------
 function calc(){
@@ -407,7 +434,7 @@ function renderListas(c){
       const seg = el("div","seg"); seg.setAttribute("role","group"); seg.setAttribute("aria-label","Decisão para "+t.id);
       [["sim","Quero"],["talvez","Talvez"],["nao","Não"]].forEach(([v,l])=>{
         const b = el("button","b-"+v,l); b.type="button"; b.setAttribute("aria-pressed", s===v);
-        b.onclick = () => { if (st[t.id]===v) delete st[t.id]; else st[t.id]=v; persist(); render(); };
+        b.onclick = () => { if (st[t.id]===v) delete st[t.id]; else st[t.id]=v; persist(); render(); enviar(t.id, st[t.id] || ""); };
         seg.append(b);
       });
       card.append(seg);
